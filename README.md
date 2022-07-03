@@ -1,2 +1,2 @@
 # KIT
-Rust-Based 
+Rust Game KIT
