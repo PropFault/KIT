@@ -1,5 +1,10 @@
+extern crate core;
+
 mod rendering;
 mod ecs;
+mod input;
+mod math;
+mod quad;
 
 use std::time::Duration;
 use sdl2::event::Event;
