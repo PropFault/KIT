@@ -1,30 +1,31 @@
-use std::ptr::null;
 use sdl2::event::Event;
-use sdl2::log::Category::Input;
+use crate::Input;
 use crate::input::input::BasicInput;
 use crate::input::input_identifier::InputIdentifier;
-use crate::input::input_listener::InputListener;
 use crate::input::input_provider::InputProvider;
-use crate::input::pump::Pump;
+use crate::pump::pump::Pump;
 
-pub struct SDLInputProvider{
-    pub(crate) listeners: Vec<&dyn InputListener>,
-    pub(crate) event_pump: sdl2::EventPump
-}
-impl InputProvider for SDLInputProvider{
-    fn add_input_listener(&mut self, input_listener: Weak<dyn InputListener>) {
-        self.listeners.push(input_listener);
-    }
 
-    fn remove_input_listener(&mut self, input_listener: &dyn InputListener) {
-        self.listeners.retain(|v| v.as_ptr() != input_listener);
-    }
+pub struct SDLInputProvider<'a, T> {
+    pub event_pump: sdl2::EventPump,
+    _self : &'a mut T,
+    pub on_button_pressed: fn(_self : &mut T, input: &dyn Input),
+    pub on_button_released: fn(_self: &mut T, input: &dyn Input)
 }
 
-impl Pump for SDLInputProvider {
+impl<'a, T> InputProvider<T> for SDLInputProvider<'a, T> {
+    fn set_on_button_pressed_callback(&mut self, callback: fn(&mut T, &dyn Input)) {
+        self.on_button_released = callback;
+    }
+
+    fn set_on_button_released_callback(&mut self, callback: fn(&mut T, &dyn Input)) {
+        self.on_button_released = callback;
+    }
+}
+
+impl<'a, T> Pump for SDLInputProvider<'a, T> {
     fn pump(&mut self) {
         for event in self.event_pump.poll_iter() {
-
             let input= match event {
                 Event::KeyDown{scancode,..} => {
                     BasicInput{
@@ -49,26 +50,22 @@ impl Pump for SDLInputProvider {
                 _ => { return; }
             };
 
-            for listener in self.listeners{
-                match input.identifier {
-                    InputIdentifier::Key{..} | InputIdentifier::Button {..} => {
-                        if input.value > input.threshold {
-                            listener.upgrade().unwrap().on_button_pressed(&input, false)
-                        }else {
-                            listener.upgrade().unwrap().on_button_released(&input)
-                        }
+            match input.identifier {
+                InputIdentifier::Key{..} | InputIdentifier::Button {..} => {
+                    if input.value > input.threshold {
+                        (self.on_button_pressed)(self._self, &input)
+                    }else {
+                        (self.on_button_released)(self._self, &input)
                     }
                 }
-
+                _ => {}
             }
-
-
         }
     }
 }
 
-impl SDLInputProvider{
-    pub(crate) fn new(context : sdl2::Sdl) -> SDLInputProvider{
-        return SDLInputProvider{ listeners: Vec::new(), event_pump: context.event_pump().unwrap() }
+impl<'a, T> SDLInputProvider<'a, T>{
+    pub(crate) fn new(_self : &'a mut T, context : sdl2::Sdl, on_button_pressed: fn(_self: & mut T, input: &dyn Input), on_button_released: fn(_self: & mut T, input: &dyn Input)) -> SDLInputProvider<T> {
+        return SDLInputProvider{ event_pump: context.event_pump().unwrap(), _self, on_button_pressed, on_button_released }
     }
 }

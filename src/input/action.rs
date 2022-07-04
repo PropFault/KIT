@@ -91,7 +91,7 @@ impl Input for Action {
 impl ActionTrait for Action {
     fn add_input(&mut self, input: Box<dyn Input>, map_floor: f32, map_ceil: f32, invert: bool) {
         let action_map_value = ActionMapValue{map_floor, map_ceil, input, invert };
-        self.input_map.insert((*input.get_identifier()).clone(), action_map_value);
+        self.input_map.insert((*action_map_value.input.get_identifier()).clone(), action_map_value);
     }
 
     fn remove_input(&mut self, input: Box<dyn Input>) {
@@ -107,5 +107,11 @@ impl Default for Action {
             threshold : 0.5,
             identifier : InputIdentifier::Action { id: "untitled".to_string() }
         }
+    }
+}
+
+impl ToString for Action{
+    fn to_string(&self) -> String {
+        return self.identifier.to_string()
     }
 }

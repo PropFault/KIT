@@ -1,7 +1,6 @@
-use std::rc::Weak;
-use crate::input::input_listener::InputListener;
+use crate::{Input, Pump};
 
-pub trait InputProvider{
-    fn add_input_listener(&mut self, input_listener : Weak<dyn InputListener>);
-    fn remove_input_listener(&mut self, input_listener : &dyn InputListener);
+pub trait InputProvider<T> : Pump{
+    fn set_on_button_pressed_callback(&mut self, callback: fn(_self: &mut T, input: &dyn Input));
+    fn set_on_button_released_callback(&mut self, callback: fn(_self: &mut T, input: &dyn Input));
 }

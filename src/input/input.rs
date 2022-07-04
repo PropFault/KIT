@@ -1,6 +1,6 @@
 use crate::input::input_identifier::InputIdentifier;
 
-pub trait Input {
+pub trait Input : ToString{
     fn get_value(&self) -> f32;
     fn set_deadzone(&mut self, deadzone: f32);
     fn get_deadzone(&self) -> f32;
@@ -79,5 +79,11 @@ impl BasicInput{
 
     pub fn set_value(&mut self,value : f32){
         self.value = value;
+    }
+}
+
+impl ToString for BasicInput{
+    fn to_string(&self) -> String {
+        return String::new() + "VALUE: " + &*self.value.to_string() + " ID: " + &*self.identifier.to_string();
     }
 }

@@ -1,6 +1,5 @@
-cargo-features = ["edition2021"]
 [package]
-name = "KIT"
+name = "Kit"
 version = "0.1.0"
 edition = "2021"
 

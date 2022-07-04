@@ -38,3 +38,22 @@ pub enum InputIdentifier{
     Button{ button_num : i8},
     Action{ id : String }
 }
+
+impl ToString for InputIdentifier {
+    fn to_string(&self) -> String {
+        return match self {
+            InputIdentifier::Action {id} => {
+                id.clone()
+            }
+            InputIdentifier::Key { key} => {
+                key.to_string()
+            }
+            InputIdentifier::Button {button_num} => {
+                button_num.to_string()
+            }
+            InputIdentifier::Joy { axis_number, joy_number} => {
+                "J:".to_string() + &*joy_number.to_string() + " A:" + &*axis_number.to_string()
+            }
+        }
+    }
+}
