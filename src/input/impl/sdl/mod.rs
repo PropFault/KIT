@@ -1,1 +1,1 @@
-mod sdl_input_provider;
+pub mod sdl_input_provider;

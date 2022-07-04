@@ -6,46 +6,54 @@ mod input;
 mod math;
 mod quad;
 
+use std::rc::Weak;
 use std::time::Duration;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::libc::printf;
 use sdl2::log::Category::Render;
 use sdl2::pixels::Color;
 use sdl2::Sdl;
+use crate::input::input::Input;
+use crate::input::input_listener::InputListener;
+use crate::input::input_provider::InputProvider;
+use crate::input::pump::Pump;
+use crate::input::r#impl::sdl::sdl_input_provider::SDLInputProvider;
 
-fn main() {
-    let sdl_context = sdl2::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
+struct Game{
 
-    let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
-        .position_centered()
-        .build()
-        .unwrap();
+}
+impl InputListener for Game{
+    fn on_button_pressed(&self, button:&dyn Input, is_initial_press : bool){
+        println!("VALUE: {}", button.get_value());
+    }
+    fn on_button_released(&self, button:&dyn Input){
+        println!("VALUE: {}", button.get_value());
+    }
 
+}
+impl Game{
+    pub fn main(&self){
+        let sdl_context = sdl2::init().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
 
-    let mut canvas = window.into_canvas().build().unwrap();
+        let window = video_subsystem.window("rust-sdl2 demo", 800, 600)
+            .position_centered()
+            .build()
+            .unwrap();
 
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
-    canvas.clear();
-    canvas.present();
-    let mut event_pump = sdl_context.event_pump().unwrap();
-    let mut i = 0;
-    'running: loop {
-        i = (i + 1) % 255;
-        canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
-        canvas.clear();
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit {..} |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    break 'running
-                },
-                _ => {}
-            }
+        let mut i = 0;
+        let mut input_provider = SDLInputProvider::new(sdl_context);
+        input_provider.add_input_listener(self);
+        while i < 100000{
+            input_provider.pump();
+            i+=1;
         }
-        // The rest of the game loop goes here...
-
-        canvas.present();
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 }
+
+fn main() {
+    let game = Game {};
+    game.main();
+}
+

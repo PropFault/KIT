@@ -4,19 +4,19 @@ use std::collections::HashMap;
 use std::iter::Map;
 use sdl2::libc::regoff_t;
 use crate::input::input::Input;
-use crate::input::input_identifier::{InputBodyAction, InputIdentifier, InputType};
+use crate::input::input_identifier::InputIdentifier;
 use crate::math::floating_point::{lerp, map_range, normalise_range};
 
-pub trait ActionTrait : Input{
-    fn add_input(&mut self, input : &dyn Input, map_floor: f32, map_ceil: f32, invert: bool);
-    fn remove_input(&mut self, input: &dyn Input);
+pub trait ActionTrait : Input {
+    fn add_input(&mut self, input : Box<dyn Input>, map_floor: f32, map_ceil: f32, invert: bool);
+    fn remove_input(&mut self, input: Box<dyn Input>);
 }
 
 struct ActionMapValue{
     map_floor: f32,
     map_ceil: f32,
     invert: bool,
-    input: dyn Input
+    input: Box<dyn Input>
 }
 
 pub struct Action{
@@ -33,8 +33,8 @@ impl Input for Action {
         for entry in self.input_map.iter(){
             let input = &entry.1.input;
             let mut normalised = normalise_range(input.get_value(), input.get_max(), input.get_min());
-            if(entry.1.invert) {
-                normalised = 1 - normalised;
+            if entry.1.invert {
+                normalised = 1.0 - normalised;
             }
             let remapped = lerp(entry.1.map_floor, entry.1.map_ceil, normalised);
             value += remapped;
@@ -63,7 +63,7 @@ impl Input for Action {
     }
 
     fn get_min(&self) -> f32 {
-        return self.input_map.values().min_by(|a , b| a.input.get_min().cmp(b.input.get_min())).get_min();
+        return self.input_map.values().min_by(|a , b| a.input.get_min().total_cmp(&b.input.get_min())).unwrap().input.get_min();
     }
 
     fn set_max(&mut self, max: f32) {
@@ -71,14 +71,16 @@ impl Input for Action {
     }
 
     fn get_max(&self) -> f32 {
-        return self.input_map.values().max_by(|a, b| a.input.get_max().cmp(b.input.get_max())).get_max();
+        return self.input_map.values().max_by(|a, b| a.input.get_max().total_cmp(&b.input.get_max())).unwrap().input.get_max();
     }
 
-    fn set_identifier(&mut self, id: &InputIdentifier) {
-        if id.input_type != InputType::ACTION {
-            panic!("Cant identify action with non-action id");
+    fn set_identifier(&mut self, id: InputIdentifier) {
+        match id {
+            InputIdentifier::Action {..} => {
+                self.identifier = id;
+            }
+            _=> panic!("Can't set identifier to non-action identifier")
         }
-        self.identifier = (*id).clone();
     }
 
     fn get_identifier(&self) -> &InputIdentifier {
@@ -87,13 +89,13 @@ impl Input for Action {
 }
 
 impl ActionTrait for Action {
-    fn add_input(&mut self, input: &dyn Input, map_floor: f32, map_ceil: f32, invert: bool) {
+    fn add_input(&mut self, input: Box<dyn Input>, map_floor: f32, map_ceil: f32, invert: bool) {
         let action_map_value = ActionMapValue{map_floor, map_ceil, input, invert };
         self.input_map.insert((*input.get_identifier()).clone(), action_map_value);
     }
 
-    fn remove_input(&mut self, input: &dyn Input) {
-        self.input_map.remove(&input.get_identifier());
+    fn remove_input(&mut self, input: Box<dyn Input>) {
+        self.input_map.remove(input.get_identifier());
     }
 }
 
@@ -103,7 +105,7 @@ impl Default for Action {
             input_map: HashMap::new(),
             deadzone : 0.05,
             threshold : 0.5,
-            identifier : InputIdentifier { input_type: InputType::Action, body: InputBodyAction{ id: "Untitled"}}
+            identifier : InputIdentifier::Action { id: "untitled".to_string() }
         }
     }
 }
