@@ -2,7 +2,6 @@ use std::any::Any;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::iter::Map;
-use sdl2::libc::regoff_t;
 use crate::input::input::Input;
 use crate::input::input_identifier::InputIdentifier;
 use crate::math::floating_point::{lerp, map_range, normalise_range};

@@ -65,7 +65,7 @@ impl<'a, T> Pump for SDLInputProvider<'a, T> {
 }
 
 impl<'a, T> SDLInputProvider<'a, T>{
-    pub(crate) fn new(_self : &'a mut T, context : sdl2::Sdl, on_button_pressed: fn(_self: & mut T, input: &dyn Input), on_button_released: fn(_self: & mut T, input: &dyn Input)) -> SDLInputProvider<T> {
+    pub(crate) fn new(_self : &'a mut T, context : &sdl2::Sdl, on_button_pressed: fn(_self: & mut T, input: &dyn Input), on_button_released: fn(_self: & mut T, input: &dyn Input)) -> SDLInputProvider<'a, T> {
         return SDLInputProvider{ event_pump: context.event_pump().unwrap(), _self, on_button_pressed, on_button_released }
     }
 }

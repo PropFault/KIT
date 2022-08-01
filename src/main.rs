@@ -7,6 +7,10 @@ mod math;
 mod quad;
 mod pump;
 
+use crate::ecs::entity_component_hash_map::EntityComponentHashMap;
+use rand::Rng;
+use crate::ecs::component_pool::Component;
+use crate::ecs::entity_component_map::EntityComponentMap;
 use crate::input::input::Input;
 use crate::input::input_provider::InputProvider;
 use crate::input::r#impl::sdl::sdl_input_provider::SDLInputProvider;
@@ -28,10 +32,32 @@ impl Game{
             .unwrap();
 
         let mut i = 0;
-        let input_provider: &mut dyn InputProvider<Game> = &mut SDLInputProvider::new(self, sdl_context, Game::on_button_pressed, Game::on_button_released);
+        let mut pumper = SDLInputProvider::new(self, &sdl_context, Game::on_button_pressed, Game::on_button_released);
+        let mut ecs = EntityComponentHashMap::new();
+        let mut rng = rand::thread_rng();
+        let entity1 = rng.gen::<u64>();
+        let entity2 = rng.gen::<u64>();
+        let component_type_1 = 1;
+        let component_type_2 = 2;
+        let mut components : Vec<u64> = Vec::new();
+        for i in 0 .. 100{
+            components.push(i);
+            if i % 2 == 0 {
+                ecs.add_component(entity1, component_type_1, i);
+            }else {
+                ecs.add_component(entity2, component_type_2, i);
+            }
+        }
+        println!("Entity 1 type 1:");
+        if let Some(comps) =  ecs.get_components(entity1, component_type_1){
+            for component in comps{
+                println!("{}", component);
+            }
+        }
+
 
         while i < 10000000{
-            input_provider.pump();
+            pumper.pump();
             i+=1;
         }
     }

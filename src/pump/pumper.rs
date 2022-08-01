@@ -16,7 +16,7 @@ impl Pumper{
     pub(crate) fn new() -> Pumper{
         return Pumper{ pumps: Vec::new()}
     }
-    pub(crate) fn add(&mut self, pump: Box<dyn Pump> ){
+    pub(crate) fn add(&mut self, pump: Box<dyn Pump>){
         self.pumps.push(pump);
     }
 }
