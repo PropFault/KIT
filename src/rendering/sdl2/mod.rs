@@ -1,0 +1,1 @@
+pub mod sdl_resource_registry;

@@ -1,26 +1,20 @@
 extern crate core;
 
-mod rendering;
-mod ecs;
-mod input;
-mod math;
-mod quad;
-mod pump;
+use sdl2::rect::Rect;
+use sdl2::video::WindowContext;
+use crate::libs::ecs::component_pool_lifeguard::ComponentPoolLifeguard;
+use crate::libs::input::r#impl::sdl::sdl_input_provider::SDLInputProvider;
 
-use crate::ecs::entity_component_hash_map::EntityComponentHashMap;
-use rand::Rng;
-use crate::ecs::component_pool::Component;
-use crate::ecs::entity_component_map::EntityComponentMap;
-use crate::input::input::Input;
-use crate::input::input_provider::InputProvider;
-use crate::input::r#impl::sdl::sdl_input_provider::SDLInputProvider;
-use crate::pump::pump::Pump;
-use crate::pump::pumper::Pumper;
+mod rendering;
+mod quad;
+mod components;
+mod libs;
 
 struct Game{
     pressed : i32,
     released : i32
 }
+
 impl Game{
     pub fn main(&mut self){
         let sdl_context = sdl2::init().unwrap();
@@ -31,34 +25,31 @@ impl Game{
             .build()
             .unwrap();
 
+        let mut canvas = window.into_canvas().build().map_err(|e| e.to_string()).unwrap();
+
         let mut i = 0;
         let mut pumper = SDLInputProvider::new(self, &sdl_context, Game::on_button_pressed, Game::on_button_released);
-        let mut ecs = EntityComponentHashMap::new();
-        let mut rng = rand::thread_rng();
-        let entity1 = rng.gen::<u64>();
-        let entity2 = rng.gen::<u64>();
-        let component_type_1 = 1;
-        let component_type_2 = 2;
-        let mut components : Vec<u64> = Vec::new();
-        for i in 0 .. 100{
-            components.push(i);
-            if i % 2 == 0 {
-                ecs.add_component(entity1, component_type_1, i);
-            }else {
-                ecs.add_component(entity2, component_type_2, i);
-            }
-        }
-        println!("Entity 1 type 1:");
-        if let Some(comps) =  ecs.get_components(entity1, component_type_1){
-            for component in comps{
-                println!("{}", component);
-            }
-        }
-
-
+        let mut texture_creator = canvas.texture_creator();
+        let mut texture_pool: ComponentPoolLifeguard<TextureComponent<WindowContext>> = ComponentPoolLifeguard::new();
+        let texture_id = texture_pool.reserve(TextureComponent::initialize, ("C:/Users/Biggest/Desktop/colortest.png".to_string(), &mut texture_creator));
         while i < 10000000{
             pumper.pump();
-            i+=1;
+            canvas.clear();
+            let texture_comp = texture_pool.checkout(texture_id).unwrap();
+            if let Some(texture) = texture_comp.texture.borrow_mut(){
+                canvas.copy(texture, None, Some(Rect::new(100, 100, 256, 256))).unwrap();
+                canvas.copy_ex(
+                    texture,
+                    None,
+                    Some(Rect::new(450, 100, 256, 256)),
+                    30.0,
+                    None,
+                    false,
+                    false,
+                ).expect("TODO: panic message");
+                canvas.present();
+                i+=1;
+            }
         }
     }
     pub fn on_button_pressed(&mut self, input: &dyn Input){
