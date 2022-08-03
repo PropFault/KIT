@@ -1,1 +1,1 @@
-mod texture_component;
+pub mod texture_component;

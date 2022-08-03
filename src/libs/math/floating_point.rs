@@ -1,5 +1,4 @@
 use std::ops::{Add, Div, Mul, Sub};
-use std::process::Output;
 
 pub fn normalise_range<T>(value : T, ceil : T, floor : T) -> T
     where T: Copy + Add<T, Output=T> + Sub<T, Output=T> + Div<T, Output=T>

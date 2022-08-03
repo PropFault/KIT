@@ -1,4 +1,4 @@
-use crate::pump::pump::Pump;
+use crate::libs::pump::pump::Pump;
 
 pub struct Pumper{ // Pumps pumps
     pumps : Vec<Box<dyn Pump>> // Pumps to pump

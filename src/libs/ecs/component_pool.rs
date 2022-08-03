@@ -1,4 +1,3 @@
-use rand::{RngCore, thread_rng};
 
 pub trait Component{
     fn new() -> Self;

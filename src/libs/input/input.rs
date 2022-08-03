@@ -1,4 +1,4 @@
-use crate::input::input_identifier::InputIdentifier;
+use crate::libs::input::input_identifier::InputIdentifier;
 
 pub trait Input : ToString{
     fn get_value(&self) -> f32;

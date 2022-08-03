@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter, Read, Seek, Write};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
 pub trait Resource{
@@ -18,5 +18,11 @@ impl Resource for FileResource{
 
     fn write(&mut self) -> Box<dyn Write> {
         Box::new(BufWriter::new(File::open(self.path.clone()).unwrap()))
+    }
+}
+
+impl FileResource{
+    pub fn new(path: Box<Path>) -> FileResource{
+        FileResource{ path }
     }
 }

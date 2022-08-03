@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::ecs::entity_component_map::EntityComponentMap;
+use crate::libs::ecs::entity_component_map::EntityComponentMap;
 
 pub type EntityComponentHashMap = HashMap<u64, HashMap<u64, Vec<u64>>>;
 

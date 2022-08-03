@@ -1,10 +1,9 @@
 use sdl2::event::Event;
 use crate::Input;
-use crate::input::input::BasicInput;
-use crate::input::input_identifier::InputIdentifier;
-use crate::input::input_provider::InputProvider;
-use crate::pump::pump::Pump;
-
+use crate::libs::input::input::BasicInput;
+use crate::libs::input::input_identifier::InputIdentifier;
+use crate::libs::input::input_provider::InputProvider;
+use crate::libs::pump::pump::Pump;
 
 pub struct SDLInputProvider<'a, T> {
     pub event_pump: sdl2::EventPump,

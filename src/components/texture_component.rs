@@ -1,8 +1,8 @@
-use std::ops::Deref;
-use rand::{RngCore, thread_rng};
-use rand::rngs::ThreadRng;
-use crate::{Component, ImageRaw};
-use crate::rendering::resource_registry::ResourceRegistry;
+use crate::FileResource;
+use crate::libs::ecs::component_pool::Component;
+use crate::libs::loading::image_loader::{ImageLoader};
+use crate::libs::loading::loader::Loader;
+use crate::libs::rendering::resource_registry::ResourceRegistry;
 
 pub struct TextureComponent{
     pub texture_ticket : Option<u64>
@@ -25,7 +25,9 @@ impl Component for TextureComponent {
 }
 
 impl TextureComponent {
-    fn initialize(&mut self, args: (&ImageRaw, &mut dyn ResourceRegistry)){
-        self.texture_ticket = Option::from(args.1.register_texture(args.0));
+    pub(crate) fn initialize(&mut self, args: (&mut FileResource, &mut dyn ResourceRegistry)){
+        let mut imageLoader = ImageLoader::new();
+
+        self.texture_ticket = Option::from(args.1.register_texture(&mut imageLoader.load(args.0)));
     }
 }

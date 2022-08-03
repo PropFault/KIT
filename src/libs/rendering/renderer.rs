@@ -1,5 +1,4 @@
-use crate::rendering::scene::Scene;
 
 pub trait Renderer{
-    fn render(&self, scene: dyn Scene) -> Vec<u8>;
+    fn draw_tex(&mut self, texture_ticket : u64, x : i32, y : i32, w : u32, h: u32);
 }

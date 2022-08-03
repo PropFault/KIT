@@ -1,10 +1,7 @@
-use std::any::Any;
-use std::borrow::Borrow;
 use std::collections::HashMap;
-use std::iter::Map;
-use crate::input::input::Input;
-use crate::input::input_identifier::InputIdentifier;
-use crate::math::floating_point::{lerp, map_range, normalise_range};
+use crate::Input;
+use crate::libs::input::input_identifier::InputIdentifier;
+use crate::libs::math::floating_point::{lerp, normalise_range};
 
 pub trait ActionTrait : Input {
     fn add_input(&mut self, input : Box<dyn Input>, map_floor: f32, map_ceil: f32, invert: bool);

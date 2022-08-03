@@ -1,9 +1,16 @@
 extern crate core;
 
-use sdl2::rect::Rect;
-use sdl2::video::WindowContext;
+use std::path::Path;
+use crate::components::texture_component::TextureComponent;
+use crate::libs::ecs::component_pool::ComponentPool;
 use crate::libs::ecs::component_pool_lifeguard::ComponentPoolLifeguard;
+use crate::libs::input::input::Input;
 use crate::libs::input::r#impl::sdl::sdl_input_provider::SDLInputProvider;
+use crate::libs::loading::resource::FileResource;
+use crate::libs::pump::pump::Pump;
+use crate::libs::rendering::renderer::Renderer;
+use crate::rendering::sdl2::sdl_renderer::SDLRenderer;
+use crate::rendering::sdl2::sdl_resource_registry::SDLResourceRegistry;
 
 mod rendering;
 mod quad;
@@ -29,24 +36,18 @@ impl Game{
 
         let mut i = 0;
         let mut pumper = SDLInputProvider::new(self, &sdl_context, Game::on_button_pressed, Game::on_button_released);
-        let mut texture_creator = canvas.texture_creator();
-        let mut texture_pool: ComponentPoolLifeguard<TextureComponent<WindowContext>> = ComponentPoolLifeguard::new();
-        let texture_id = texture_pool.reserve(TextureComponent::initialize, ("C:/Users/Biggest/Desktop/colortest.png".to_string(), &mut texture_creator));
+        let mut texture_pool: ComponentPoolLifeguard<TextureComponent> = ComponentPoolLifeguard::new();
+
+        let texture_creator = canvas.texture_creator();
+        let mut resource_reg = SDLResourceRegistry::new(texture_creator);
+        let mut renderer = SDLRenderer::new(canvas, resource_reg);
+        let texture_id = texture_pool.reserve(TextureComponent::initialize, (&mut FileResource::new(Box::from(Path::new("C:/Users/Biggest/Desktop/colortest.png"))), &mut resource_reg));
         while i < 10000000{
             pumper.pump();
             canvas.clear();
             let texture_comp = texture_pool.checkout(texture_id).unwrap();
-            if let Some(texture) = texture_comp.texture.borrow_mut(){
-                canvas.copy(texture, None, Some(Rect::new(100, 100, 256, 256))).unwrap();
-                canvas.copy_ex(
-                    texture,
-                    None,
-                    Some(Rect::new(450, 100, 256, 256)),
-                    30.0,
-                    None,
-                    false,
-                    false,
-                ).expect("TODO: panic message");
+            if let Some(textureId) = texture_comp.texture_ticket{
+                renderer.draw_tex(texture_id, 255, 255, 100, 100);
                 canvas.present();
                 i+=1;
             }

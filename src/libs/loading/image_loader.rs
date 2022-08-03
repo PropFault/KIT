@@ -1,10 +1,9 @@
-use std::any::Any;
 use std::io::{Cursor, Read};
-use std::ops::{Deref, DerefMut};
-use image::{ColorType, GenericImageView};
-use crate::loading::loader::Loader;
-use crate::loading::resource::Resource;
+use image::{ColorType};
 use image::io::Reader as ImageReader;
+use crate::libs::loading::loader::Loader;
+use crate::libs::loading::resource::Resource;
+
 pub struct ImageLoader{
 }
 
