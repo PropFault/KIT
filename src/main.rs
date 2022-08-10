@@ -1,6 +1,9 @@
 extern crate core;
+extern crate core;
 
+use std::ops::Deref;
 use std::path::Path;
+use sdl2::video::WindowContext;
 use crate::components::texture_component::TextureComponent;
 use crate::libs::ecs::component_pool::ComponentPool;
 use crate::libs::ecs::component_pool_lifeguard::ComponentPoolLifeguard;
@@ -16,6 +19,7 @@ mod rendering;
 mod quad;
 mod components;
 mod libs;
+mod systems;
 
 struct Game{
     pressed : i32,
@@ -39,16 +43,16 @@ impl Game{
         let mut texture_pool: ComponentPoolLifeguard<TextureComponent> = ComponentPoolLifeguard::new();
 
         let texture_creator = canvas.texture_creator();
-        let mut resource_reg = SDLResourceRegistry::new(texture_creator);
+        let mut resource_reg  = SDLResourceRegistry::new(&texture_creator);
         let mut renderer = SDLRenderer::new(canvas, resource_reg);
-        let texture_id = texture_pool.reserve(TextureComponent::initialize, (&mut FileResource::new(Box::from(Path::new("C:/Users/Biggest/Desktop/colortest.png"))), &mut resource_reg));
+        let texture_id = texture_pool.reserve(TextureComponent::initialize, (&mut FileResource::new(Box::from(Path::new("/home/biggest/Downloads/unnamed.png"))), &mut renderer.registry));
         while i < 10000000{
             pumper.pump();
-            canvas.clear();
-            let texture_comp = texture_pool.checkout(texture_id).unwrap();
-            if let Some(textureId) = texture_comp.texture_ticket{
+            renderer.clear();
+            let texture_comp = texture_pool.checkout(texture_id);
+            if let Some(texture_id) = texture_comp.as_ref().unwrap().texture_ticket{
                 renderer.draw_tex(texture_id, 255, 255, 100, 100);
-                canvas.present();
+                renderer.present();
                 i+=1;
             }
         }

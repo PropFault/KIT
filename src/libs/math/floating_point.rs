@@ -17,3 +17,4 @@ pub fn lerp<T>(a : T, b : T, t : T) -> T
 {
     return a + (b - a) * t;
 }
+

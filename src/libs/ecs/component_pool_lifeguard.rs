@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use lifeguard::{Pool, Recycleable};
 use rand::RngCore;
 use rand::rngs::ThreadRng;
-use crate::libs::ecs::component_pool::{Component, ComponentPool};
+use crate::libs::ecs::component_pool::{Component, ComponentPool, ReadableComponentPool};
 
 struct LifeguardComponentAdapter<T : Component>{
     pub component : Option<T>
@@ -41,40 +41,18 @@ impl<T: Component> LifeguardComponent for LifeguardComponentAdapter<T> {
 
 }
 
-impl<T: Component> AsRef<Result<T, &'static str>> for LifeguardComponentAdapter<T>{
-    fn as_ref(&self) -> &Result<T, &'static str> {
-        return &self.component.ok_or("Component is None");
-    }
-}
-
-impl <T: Component> AsMut<Result<T, &'static str>> for LifeguardComponentAdapter<T> {
-    fn as_mut(&mut self) -> &mut Result<T, &'static str> {
-        return &mut self.component.ok_or("Component is None");
-    }
-}
-
 pub struct ComponentPoolLifeguard<T : Component>{
     pool : Pool<LifeguardComponentAdapter<T>>,
     rented_components : HashMap<u64, LifeguardComponentAdapter<T>>,
-    rng : ThreadRng
+    rng : ThreadRng,
+    none_ref : Option<T>
 }
 
-impl <T : Component> ComponentPool<T> for ComponentPoolLifeguard<T>{
-    fn reserve<A>(&mut self, initializer: fn(&mut T, A), args : A) -> u64 {
-        let k = self.rng.next_u64();
-        let mut v = self.pool.detached();
-        initializer(v.component.as_mut().unwrap(), args);
-        self.rented_components.insert(k, v);
-        k
-    }
-
-    fn checkout(&mut self, handle: u64) -> Option<&mut T> {
+impl<T: Component> ReadableComponentPool<T> for ComponentPoolLifeguard<T> {
+    fn checkout(&mut self, handle: u64) -> &mut Option<T> {
         match self.rented_components.get_mut(&handle){
-            Some(c) => match c.component {
-                Some(mut comp) => Option::from(comp.borrow_mut()),
-                None => None
-            }
-            None => None
+            Some(c) => &mut c.component,
+            None => &mut self.none_ref
         }
     }
 
@@ -85,12 +63,24 @@ impl <T : Component> ComponentPool<T> for ComponentPoolLifeguard<T>{
     }
 }
 
+impl <T : Component> ComponentPool<T> for ComponentPoolLifeguard<T>{
+    fn reserve<A>(&mut self, initializer: fn(&mut T, A), args : A) -> u64 {
+        let k = self.rng.next_u64();
+        let mut v = self.pool.detached();
+        v.component = Some(T::new());
+        initializer(v.component.as_mut().unwrap(), args);
+        self.rented_components.insert(k, v);
+        k
+    }
+}
+
 impl<T: Component> ComponentPoolLifeguard<T>{
     pub fn new() -> ComponentPoolLifeguard<T>{
         return ComponentPoolLifeguard{
             pool: Pool::with_size(10),
             rented_components: HashMap::new(),
-            rng: ThreadRng::default()
+            rng: ThreadRng::default(),
+            none_ref: None
         }
     }
 }
