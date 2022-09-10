@@ -14,4 +14,5 @@ pub trait ReadableComponentPool<T> {
 
 pub trait ComponentPool<T> : ReadableComponentPool<T>{
     fn reserve<A>(&mut self, initializer: fn(&mut T, A), args : A) -> u64;
+
 }

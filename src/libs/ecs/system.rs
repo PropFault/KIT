@@ -16,7 +16,7 @@ pub struct SystemPump<'a>{
 
 impl<'a> Pump for SystemPump<'a> {
     fn pump(&mut self) {
-        for mut system in self.systems.as_slice(){
+        for mut system in self.systems.as_mut_slice(){
             let comps = self.ecs.get_all_components(system.get_handled_type());
             for ref ent in comps{
                 for comp in ent.1.as_slice(){
