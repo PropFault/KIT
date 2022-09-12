@@ -1,5 +1,6 @@
 extern crate core;
 
+use std::cell::RefCell;
 use std::ops::Deref;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
@@ -43,26 +44,25 @@ impl Game{
         let mut i = 0;
         let mut pumper = SDLInputProvider::new(self, &sdl_context, Game::on_button_pressed, Game::on_button_released);
         let mut texture_pool: ComponentPoolLifeguard<TextureComponent> = ComponentPoolLifeguard::new();
-        let mut texture_pool_lock : Arc<RwLock<dyn ReadableComponentPool<TextureComponent>>> = Arc::new(RwLock::new(texture_pool));
+        let mut texture_pool_lock = Arc::new(RwLock::new(texture_pool));
 
         let mut quad_pool : ComponentPoolLifeguard<QuadComponent> = ComponentPoolLifeguard::new();
-        let mut quad_pool_lock : Arc<RwLock<dyn ReadableComponentPool<QuadComponent>>> = Arc::new(RwLock::new(quad_pool));
+        let mut quad_pool_lock = Arc::new(RwLock::new(quad_pool));
 
         let texture_creator = canvas.texture_creator();
         let mut resource_reg  = SDLResourceRegistry::new(&texture_creator);
-        let mut renderer = SDLRenderer::new(canvas, resource_reg);
-        let mut renderer_lock :Arc<RwLock<Box<dyn Renderer>>>= Arc::new(RwLock::new(Box::new(renderer)));
-        let texture_id = texture_pool.reserve(TextureComponent::initialize, (&mut FileResource::new(Box::from(Path::new("/home/biggest/Downloads/unnamed.png"))), &mut renderer.registry));
+        let mut renderer = RwLock::new(SDLRenderer::new(canvas, resource_reg));
+        let texture_id = texture_pool_lock.write().unwrap().reserve(TextureComponent::initialize, (&mut FileResource::new(Box::from(Path::new("/home/biggest/Downloads/unnamed.png"))), &mut renderer.write().unwrap().registry));
 
-        let mut quad_render_system = QuadRenderSystem::new(quad_pool_lock.clone(), texture_pool_lock.clone(), renderer_lock.clone());
+        let mut quad_render_system = QuadRenderSystem::new(quad_pool_lock.clone(), texture_pool_lock.clone(), &mut renderer);
 
         while i < 10000000{
             pumper.pump();
-            renderer.clear();
+            renderer.write().unwrap().clear();
             let texture_comp = texture_pool.checkout(texture_id);
             if let Some(texture_id) = texture_comp.as_ref().unwrap().texture_ticket{
-                renderer.draw_tex(texture_id, 255, 255, 100, 100);
-                renderer.present();
+                renderer.write().unwrap().draw_tex(texture_id, 255, 255, 100, 100);
+                renderer.write().unwrap().present();
                 i+=1;
             }
         }

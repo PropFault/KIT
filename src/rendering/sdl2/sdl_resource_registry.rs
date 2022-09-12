@@ -1,6 +1,7 @@
-use std::borrow::Borrow;
+use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::ops::DerefMut;
+use std::sync::{Arc, RwLock};
 use rand::{RngCore, thread_rng};
 use rand::rngs::ThreadRng;
 use sdl2::pixels::PixelFormatEnum;
@@ -10,7 +11,7 @@ use crate::libs::loading::image_loader::{ImageRaw, PixelFormat};
 use crate::libs::rendering::resource_registry::ResourceRegistry;
 
 pub struct SDLResourceRegistry<'a, T>{
-    pub texture_creator : &'a TextureCreator<T>,
+    pub texture_creator : & 'a TextureCreator<T>,
     textures: HashMap<u64, Texture<'a>>,
     rng: ThreadRng
 }
@@ -29,7 +30,7 @@ impl <'a, T>ResourceRegistry for SDLResourceRegistry<'a, T> {
 }
 
 impl<'a, T> SDLResourceRegistry<'a, T> {
-    pub(crate) fn new(texture_creator :&'a TextureCreator<T>) -> SDLResourceRegistry<'a, T>{
+    pub(crate) fn new(texture_creator: &'a TextureCreator<T>) -> SDLResourceRegistry<'a, T>{
         SDLResourceRegistry{
             texture_creator,
             textures: HashMap::new(),
