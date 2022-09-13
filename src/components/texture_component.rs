@@ -25,9 +25,9 @@ impl Component for TextureComponent {
 }
 
 impl TextureComponent {
-    pub(crate) fn initialize(&mut self, args: (&mut FileResource, &mut dyn ResourceRegistry)){
-        let mut imageLoader = ImageLoader::new();
+    pub(crate) fn initialize<'a>(&mut self, args: (&mut FileResource, &'a mut (dyn ResourceRegistry<'a> + 'a))){
+        let mut image_loader = ImageLoader::new();
 
-        self.texture_ticket = Option::from(args.1.register_texture(&mut imageLoader.load(args.0)));
+        self.texture_ticket = Option::from(args.1.register_texture(&mut image_loader.load(args.0)));
     }
 }

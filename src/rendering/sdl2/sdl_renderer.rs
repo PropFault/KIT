@@ -22,7 +22,7 @@ impl<'a, T: RenderTarget, C> Renderer<'a> for SDLRenderer<'a, T, C> {
         self.canvas.present();
     }
 
-    fn registry(&'a mut self) -> &'a mut dyn ResourceRegistry {
+    fn registry(& mut self) -> &mut dyn ResourceRegistry<'a> {
         return &mut self.registry;
     }
 }

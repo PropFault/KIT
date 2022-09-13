@@ -8,7 +8,7 @@ use crate::libs::ecs::system::System;
 pub struct QuadRenderSystem<'a>{
     quad_pool : Arc<RwLock<dyn ReadableComponentPool<QuadComponent>>>,
     tex_pool : Arc<RwLock<dyn ReadableComponentPool<TextureComponent>>>,
-    renderer: & 'a mut RwLock<dyn Renderer<'a>>
+    renderer: Arc<RwLock<dyn Renderer<'a> + 'a>>
 }
 
 impl<'a> System for QuadRenderSystem<'a>{
@@ -41,7 +41,7 @@ impl<'a> System for QuadRenderSystem<'a>{
 }
 
 impl<'a> QuadRenderSystem<'a>{
-    pub fn new(quad_pool: Arc<RwLock<dyn ReadableComponentPool<QuadComponent>>>, tex_pool: Arc<RwLock<dyn ReadableComponentPool<TextureComponent>>>, renderer: &'a mut RwLock<dyn Renderer<'a> + 'a>) -> Self {
+    pub fn new(quad_pool: Arc<RwLock<dyn ReadableComponentPool<QuadComponent>>>, tex_pool: Arc<RwLock<dyn ReadableComponentPool<TextureComponent>>>, renderer:  Arc<RwLock<dyn Renderer<'a> + 'a>>) -> Self {
         Self { quad_pool, tex_pool, renderer }
     }
 }
